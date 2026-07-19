@@ -84,8 +84,10 @@ def run_gcc():
     try:
         proc = subprocess.Popen(args, stderr=subprocess.PIPE)
         for line in proc.stderr:
-            print(line, end="")
-            interpret_warning(line)
+    if isinstance(line, bytes):
+        line = line.decode("utf-8", errors="ignore")
+    print(line, end="")
+    interpret_warning(line)
 
         result = proc.wait()
     except OSError as e:
