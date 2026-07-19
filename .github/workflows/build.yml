@@ -4,14 +4,48 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Test
+      - name: Install dependencies
         run: |
-          echo "Workflow berjalan!"
-          uname -a
+          sudo apt update
+          sudo apt install -y \
+            bc \
+            bison \
+            build-essential \
+            ccache \
+            flex \
+            git \
+            libssl-dev \
+            libelf-dev \
+            gcc-arm-linux-gnueabi \
+            python2
+
+      - name: Show compiler
+        run: |
+          arm-linux-gnueabi-gcc --version
+          python2 --version
+
+      - name: Configure kernel
+        run: |
+          mkdir -p out
+          make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
+
+      - name: Build kernel
+        run: |
+          make -j$(nproc) \
+            O=out \
+            ARCH=arm \
+            CROSS_COMPILE=arm-linux-gnueabi-
+
+      - name: Upload kernel
+        uses: actions/upload-artifact@v4
+        with:
+          name: Redmi2-Kernel
+          path: |
+            out/arch/arm/boot/*
