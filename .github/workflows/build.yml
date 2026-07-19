@@ -5,46 +5,42 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y \
-          bc \
-          bison \
-          build-essential \
-          ccache \
-          flex \
-          git \
-          libssl-dev \
-          libelf-dev \
-          gcc-arm-linux-gnueabi \
-          python2
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            bc \
+            bison \
+            build-essential \
+            ccache \
+            flex \
+            git \
+            libelf-dev \
+            libssl-dev \
+            gcc-arm-linux-gnueabi
 
-    - name: Configure kernel
-      run: |
-        mkdir -p out
-        make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
+      - name: Configure kernel
+        run: |
+          mkdir -p out
+          make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
 
-    - name: Build kernel
-      env:
-        HOSTCFLAGS: -fcommon
-      run: |
-        make -j$(nproc) \
-          O=out \
-          ARCH=arm \
-          CROSS_COMPILE=arm-linux-gnueabi-
+      - name: Build kernel
+        run: |
+          make -j$(nproc) \
+            O=out \
+            ARCH=arm \
+            HOSTCFLAGS="-fcommon" \
+            CROSS_COMPILE=arm-linux-gnueabi-
 
-    - name: Upload Image
-      uses: actions/upload-artifact@v4
-      with:
-        name: Kernel-Image
-        path: |
-          out/arch/arm/boot/zImage
-          out/arch/arm/boot/Image*
-          out/arch/arm/boot/dts/**/*.dtb
+      - name: Upload kernel
+        uses: actions/upload-artifact@v4
+        with:
+          name: Redmi2-Kernel
+          path: |
+            out/arch/arm/boot/*
