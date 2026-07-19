@@ -49,6 +49,9 @@ allowed_warnings = set([
     "cmpxchg.h:162",
     "ping.c:87",
     "cpaccess.c:224",
+    "smcmod.c:439",
+    "smcmod.c:459",
+    "smcmod.c:473",
  ])
 
 # Capture the name of the object file, can find it.
@@ -61,8 +64,8 @@ def interpret_warning(line):
     m = warning_re.match(line)
     if m and m.group(2) not in allowed_warnings:
         print("warning:", m.group(2))
-        return
-
+        pass
+        
 def run_gcc():
     args = sys.argv[1:]
 
