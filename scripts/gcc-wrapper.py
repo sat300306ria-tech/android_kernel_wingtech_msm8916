@@ -71,25 +71,25 @@ def interpret_warning(line):
 
 def run_gcc():
     args = sys.argv[1:]
-    # Look for -o
+
     try:
         i = args.index('-o')
         global ofile
-        ofile = args[i+1]
+        ofile = args[i + 1]
     except (ValueError, IndexError):
         pass
 
-    compiler = sys.argv[0]
-
     try:
         proc = subprocess.Popen(args, stderr=subprocess.PIPE)
+
         for line in proc.stderr:
-    if isinstance(line, bytes):
-        line = line.decode("utf-8", errors="ignore")
-    print(line, end="")
-    interpret_warning(line)
+            if isinstance(line, bytes):
+                line = line.decode("utf-8", errors="ignore")
+            print(line, end="")
+            interpret_warning(line)
 
         result = proc.wait()
+
     except OSError as e:
         result = e.errno
         if result == errno.ENOENT:
