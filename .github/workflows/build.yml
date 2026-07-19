@@ -1,1 +1,54 @@
+name: Build Redmi2 Kernel
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install packages
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            bc \
+            bison \
+            build-essential \
+            ccache \
+            flex \
+            git \
+            libelf-dev \
+            libssl-dev \
+            gcc-arm-linux-gnueabi \
+            binutils-arm-linux-gnueabi \
+            python2
+
+      - name: Show environment
+        run: |
+          gcc --version
+          arm-linux-gnueabi-gcc --version
+          python2 --version
+
+      - name: Kernel config
+        run: |
+          mkdir -p out
+          make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
+
+      - name: Build kernel
+        run: |
+          make -j$(nproc) \
+            O=out \
+            ARCH=arm \
+            CROSS_COMPILE=arm-linux-gnueabi-
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-out
+          path: out/arch/arm/boot/
