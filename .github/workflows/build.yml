@@ -12,18 +12,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y \
-            bc \
-            bison \
-            build-essential \
-            ccache \
-            flex \
-            git \
-            libelf-dev \
-            libssl-dev \
-            gcc-arm-linux-gnueabi
+  run: |
+    sudo apt update
+    sudo apt install -y \
+      bc \
+      bison \
+      build-essential \
+      flex \
+      git \
+      libssl-dev \
+      wget
+
+       - name: Download GCC 4.9
+  run: |
+    wget https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabi/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz
+    tar -xf gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz
 
       - name: Configure kernel
         run: |
@@ -31,13 +34,13 @@ jobs:
           make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
 
       - name: Build kernel
-        run: |
-          make -j1 \
-            O=out \
-            ARCH=arm \
-            CROSS_COMPILE=arm-linux-gnueabi- \
-            HOSTCFLAGS="-fcommon" \
-            V=1
+  run: |
+    export PATH=$PWD/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin:$PATH
+    make -j$(nproc) \
+      O=out \
+      ARCH=arm \
+      CROSS_COMPILE=arm-linux-gnueabi- \
+      V=1
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4
