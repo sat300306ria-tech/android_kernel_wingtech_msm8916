@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout
@@ -31,12 +31,13 @@ jobs:
           make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
 
       - name: Build kernel
-        run: |
-          make -j$(nproc) \
-            O=out \
-            ARCH=arm \
-            HOSTCFLAGS="-fcommon" \
-            CROSS_COMPILE=arm-linux-gnueabi-
+  run: |
+    make -j1 \
+      O=out \
+      ARCH=arm \
+      HOSTCFLAGS="-fcommon" \
+      CROSS_COMPILE=arm-linux-gnueabi- \
+      V=1
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4
