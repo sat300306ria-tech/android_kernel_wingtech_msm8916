@@ -31,17 +31,16 @@ jobs:
           make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
 
       - name: Build kernel
-  run: |
-    make -j1 \
-      O=out \
-      ARCH=arm \
-      HOSTCFLAGS="-fcommon" \
-      CROSS_COMPILE=arm-linux-gnueabi- \
-      V=1
+        run: |
+          make -j1 \
+            O=out \
+            ARCH=arm \
+            CROSS_COMPILE=arm-linux-gnueabi- \
+            HOSTCFLAGS="-fcommon" \
+            V=1
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4
         with:
           name: Redmi2-Kernel
-          path: |
-            out/arch/arm/boot/*
+          path: out/arch/arm/boot/
