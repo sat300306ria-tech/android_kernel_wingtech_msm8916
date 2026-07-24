@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout source
@@ -17,41 +17,43 @@ jobs:
           sudo apt install -y \
             bc \
             bison \
+            build-essential \
+            ccache \
+            curl \
             flex \
+            gcc-arm-linux-gnueabi \
             git \
-            make \
-            unzip \
-            xz-utils \
-            python3 \
-            python-is-python3 \
-            libssl-dev \
             libelf-dev \
+            libncurses5-dev \
+            libssl-dev \
+            python2 \
+            unzip \
             wget
 
-      - name: Download AOSP GCC 4.9
+      - name: Patch old kernel for GCC 10+
         run: |
-          mkdir toolchain
-          cd toolchain
-          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9
+          sed -i 's/-Wall/-Wall -fcommon/g' Makefile || true
+          sed -i 's/-Werror//g' Makefile || true
 
       - name: Configure
         run: |
           mkdir -p out
-          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchain/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
-          make O=out ARCH=arm CROSS_COMPILE=$CROSS_COMPILE lineageos_wt88047_defconfig
+          make O=out \
+            ARCH=arm \
+            CROSS_COMPILE=arm-linux-gnueabi- \
+            lineageos_wt88047_defconfig
 
       - name: Build Kernel
         run: |
-          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchain/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
           make -j$(nproc) \
             O=out \
             ARCH=arm \
-            CROSS_COMPILE=$CROSS_COMPILE
+            CROSS_COMPILE=arm-linux-gnueabi-
 
-      - name: Upload Kernel
+      - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
           name: Redmi2-Kernel
           path: |
             out/arch/arm/boot/zImage
-            out/arch/arm/boot/dts
+            out/arch/arm/boot/dts/**/*.dtb
