@@ -7,26 +7,35 @@ jobs:
   build:
     runs-on: ubuntu-24.04
 
+    container:
+      image: ubuntu:20.04
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt update
-          sudo apt install -y \
+          apt-get update
+          apt-get install -y \
             bc \
             bison \
             build-essential \
             flex \
             git \
-            libelf-dev \
-            libssl-dev \
+            gcc \
+            g++ \
             gcc-arm-linux-gnueabi \
-            binutils-arm-linux-gnueabi
+            binutils-arm-linux-gnueabi \
+            libssl-dev \
+            libelf-dev \
+            python2
 
       - name: Show toolchain
         run: |
+          gcc --version
           arm-linux-gnueabi-gcc --version
 
       - name: Configure
@@ -37,14 +46,14 @@ jobs:
             CROSS_COMPILE=arm-linux-gnueabi- \
             lineageos_wt88047_defconfig
 
-      - name: Build Kernel
+      - name: Build
         run: |
           make -j$(nproc) \
             O=out \
             ARCH=arm \
             CROSS_COMPILE=arm-linux-gnueabi-
 
-      - name: Upload Kernel
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Redmi2-Kernel
