@@ -11,27 +11,18 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y \
-            bc \
-            bison \
-            build-essential \
-            flex \
-            git \
-            libelf-dev \
-            libssl-dev \
-            gcc-8 \
-            g++-8 \
-            gcc-8-arm-linux-gnueabi \
-            binutils-arm-linux-gnueabi
-
-      - name: Set GCC 8
-        run: |
-          echo "CC=gcc-8" >> $GITHUB_ENV
-          echo "HOSTCC=gcc-8" >> $GITHUB_ENV
-
+     - sudo apt update
+sudo apt install -y \
+  bc \
+  bison \
+  build-essential \
+  flex \
+  git \
+  libelf-dev \
+  libssl-dev \
+  gcc-arm-linux-gnueabi \
+  binutils-arm-linux-gnueabi
+  
       - name: Configure
         run: |
           mkdir -p out
@@ -42,12 +33,10 @@ jobs:
 
       - name: Build Kernel
         run: |
-          make -j2 \
-            O=out \
-            ARCH=arm \
-            CROSS_COMPILE=arm-linux-gnueabi- \
-            HOSTCC=gcc-8 \
-            HOSTCXX=g++-8
+          make -j$(nproc) \
+O=out \
+ARCH=arm \
+CROSS_COMPILE=arm-linux-gnueabi-
 
       - name: Upload Kernel
         uses: actions/upload-artifact@v4
