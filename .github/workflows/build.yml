@@ -7,58 +7,51 @@ jobs:
   build:
     runs-on: ubuntu-24.04
 
-    container:
-      image: ubuntu:20.04
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
-          apt-get update
-          apt-get install -y \
+          sudo apt update
+          sudo apt install -y \
             bc \
             bison \
-            build-essential \
             flex \
             git \
-            gcc \
-            g++ \
-            gcc-arm-linux-gnueabi \
-            binutils-arm-linux-gnueabi \
+            make \
+            unzip \
+            xz-utils \
+            python3 \
+            python-is-python3 \
             libssl-dev \
             libelf-dev \
-            python3 \
-            python-is-python3 
-            
+            wget
 
-      - name: Show toolchain
+      - name: Download AOSP GCC 4.9
         run: |
-          gcc --version
-          arm-linux-gnueabi-gcc --version
+          mkdir toolchain
+          cd toolchain
+          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9
 
       - name: Configure
         run: |
           mkdir -p out
-          make O=out \
-            ARCH=arm \
-            CROSS_COMPILE=arm-linux-gnueabi- \
-            lineageos_wt88047_defconfig
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchain/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
+          make O=out ARCH=arm CROSS_COMPILE=$CROSS_COMPILE lineageos_wt88047_defconfig
 
-      - name: Build
+      - name: Build Kernel
         run: |
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchain/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
           make -j$(nproc) \
             O=out \
             ARCH=arm \
-            CROSS_COMPILE=arm-linux-gnueabi-
+            CROSS_COMPILE=$CROSS_COMPILE
 
-      - name: Upload
+      - name: Upload Kernel
         uses: actions/upload-artifact@v4
         with:
           name: Redmi2-Kernel
           path: |
             out/arch/arm/boot/zImage
-            out/arch/arm/boot/dts/
+            out/arch/arm/boot/dts
