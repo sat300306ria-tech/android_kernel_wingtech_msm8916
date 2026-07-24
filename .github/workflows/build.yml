@@ -31,7 +31,9 @@ jobs:
             binutils-arm-linux-gnueabi \
             libssl-dev \
             libelf-dev \
-            python2
+            python3 \
+            python-is-python3 
+            
 
       - name: Show toolchain
         run: |
