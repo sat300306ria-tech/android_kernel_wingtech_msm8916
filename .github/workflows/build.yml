@@ -5,26 +5,54 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y bc bison build-essential flex git libelf-dev libssl-dev gcc-arm-linux-gnueabi
+          sudo apt install -y \
+            bc \
+            bison \
+            build-essential \
+            flex \
+            git \
+            libelf-dev \
+            libssl-dev \
+            gcc-8 \
+            g++-8 \
+            gcc-8-arm-linux-gnueabi \
+            binutils-arm-linux-gnueabi
+
+      - name: Set GCC 8
+        run: |
+          echo "CC=gcc-8" >> $GITHUB_ENV
+          echo "HOSTCC=gcc-8" >> $GITHUB_ENV
 
       - name: Configure
         run: |
           mkdir -p out
-          make O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- lineageos_wt88047_defconfig
+          make O=out \
+            ARCH=arm \
+            CROSS_COMPILE=arm-linux-gnueabi- \
+            lineageos_wt88047_defconfig
 
-      - name: Build
+      - name: Build Kernel
         run: |
-          make -j$(nproc) O=out ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
+          make -j2 \
+            O=out \
+            ARCH=arm \
+            CROSS_COMPILE=arm-linux-gnueabi- \
+            HOSTCC=gcc-8 \
+            HOSTCXX=g++-8
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Kernel
+        uses: actions/upload-artifact@v4
         with:
           name: Redmi2-Kernel
-          path: out/arch/arm/boot/
+          path: |
+            out/arch/arm/boot/zImage
+            out/arch/arm/boot/dts/
